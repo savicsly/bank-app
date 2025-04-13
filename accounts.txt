@@ -1,0 +1,10 @@
+Current,Chinedu Okafor,2072843542,5000.0,Lagos,Male,MasterCard,chinedu.okafor@example.com,08012345678,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Current,Aisha Bello,2022099620,5000.0,Kano,Female,Visa,aisha.bello@example.com,08023456789,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Savings,Ngozi Nwosu,2081035215,5000.0,Enugu,Female,Verve,ngozi.nwosu@example.com,08034567890,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Current,Emeka Obi,2025160358,5000.0,Abuja,Male,MasterCard,emeka.obi@example.com,08045678901,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Savings,Funke Adeyemi,2042921506,5000.0,Oyo,Female,Visa,funke.adeyemi@example.com,08056789012,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Current,Ibrahim Yusuf,2066655539,5000.0,Kaduna,Male,Verve,ibrahim.yusuf@example.com,08067890123,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Current,Amaka Eze,2053128386,5000.0,Anambra,Female,MasterCard,amaka.eze@example.com,08078901234,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Current,Tunde Bakare,2073359113,5000.0,Ogun,Male,Visa,tunde.bakare@example.com,08089012345,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Current,Zainab Mohammed,2091240034,5000.0,Borno,Female,Verve,zainab.mohammed@example.com,08090123456,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
+Savings,Bola Akinwale,2039094861,5000.0,Ekiti,Male,MasterCard,bola.akinwale@example.com,08001234567,XohImNooBHFR0OVvjcYpJ3NgPQ1qq73WKhHvch0VQtg=
