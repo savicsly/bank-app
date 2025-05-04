@@ -25,6 +25,7 @@ public class LoginScreen extends JFrame {
     private JTextField accountNumberField;
     private JPasswordField passwordField;
     private Color primaryColor = new Color(0, 102, 204);
+    @SuppressWarnings("unused")
     private Color secondaryColor = new Color(240, 248, 255);
 
     public LoginScreen() {
@@ -197,8 +198,23 @@ public class LoginScreen extends JFrame {
 
                 if (validateLogin(accountNumber, password)) {
                     JOptionPane.showMessageDialog(null, "Login successful!");
+
+                    String userName = "User"; // Default user name
+                    try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("accounts.txt"))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            String[] parts = line.split(",");
+                            if (parts.length >= 3 && parts[2].equals(accountNumber)) {
+                                userName = parts[1]; // Assuming user name is at index 1
+                                break;
+                            }
+                        }
+                    } catch (java.io.IOException ex) {
+                        ex.printStackTrace();
+                    }
+
                     dispose();
-                    new Dashboard();
+                    new Dashboard(accountNumber, userName);
                 } else {
                     JOptionPane.showMessageDialog(null, "Invalid credentials!", "Error", JOptionPane.ERROR_MESSAGE);
                 }

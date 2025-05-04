@@ -2,7 +2,6 @@ package src.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.time.LocalDateTime;
@@ -27,8 +26,12 @@ import org.jfree.data.general.DefaultPieDataset;
 public class Dashboard extends JFrame {
 
     private SessionManager sessionManager; // Add session management to the Dashboard
+    private String accountNumber;
+    private String userName;
 
-    public Dashboard() {
+    public Dashboard(String accountNumber, String userName) {
+        this.accountNumber = accountNumber;
+        this.userName = userName;
         sessionManager = new SessionManager(this);
         CustomUI.applyCustomStyling(this);
 
@@ -45,7 +48,6 @@ public class Dashboard extends JFrame {
         welcomePanel.setLayout(new BoxLayout(welcomePanel, BoxLayout.Y_AXIS));
         welcomePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        String userName = System.getProperty("user.name");
         LocalDateTime now = LocalDateTime.now();
         String timeOfDay = now.getHour() < 12 ? "morning" : now.getHour() < 18 ? "afternoon" : "evening";
         String formattedDate = now.format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy"));
@@ -79,13 +81,32 @@ public class Dashboard extends JFrame {
         // Account summary heading and table
         JLabel accountSummaryLabel = new JLabel("Account Summary", JLabel.CENTER);
         accountSummaryLabel.setFont(new Font("Arial", Font.BOLD, 14));
+
+        // Fetch account details based on the account number
+        String savingsBalance = "₦0";
+        String currentBalance = "₦0";
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("accounts.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length >= 4 && parts[2].equals(accountNumber)) {
+                    savingsBalance = parts[3]; // Assuming savings balance is at index 3
+                    currentBalance = parts[4]; // Assuming current balance is at index 4
+                    break;
+                }
+            }
+        } catch (java.io.IOException e) {
+            e.printStackTrace();
+        }
+
+        // Update the account summary table with the fetched details
         JTable accountTable = new JTable(new Object[][] {
-            {"Savings", "₦5000"},
-            {"Current", "₦2000"}
+            {"Savings", savingsBalance},
+            {"Current", currentBalance}
         }, new Object[] {"Account Type", "Balance"});
         JScrollPane accountScrollPane = new JScrollPane(accountTable);
 
-        // Add account summary and chart to the top panel
+        // Add account summary and other components as before
         JPanel accountSummaryPanel = new JPanel(new BorderLayout());
         accountSummaryPanel.add(accountSummaryLabel, BorderLayout.NORTH);
         accountSummaryPanel.add(accountScrollPane, BorderLayout.CENTER);
@@ -137,41 +158,31 @@ public class Dashboard extends JFrame {
         transactionsPanel.add(transactionsLabel, BorderLayout.NORTH);
         transactionsPanel.add(transactionsScrollPane, BorderLayout.CENTER);
 
-
-
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton accountManagementButton = new JButton("Account Management");
         JButton logoutButton = new JButton("Logout");
-        JButton reportsButton = new JButton("Reports"); // Add a new button for reports
+        JButton reportsButton = new JButton("Reports");
+        JButton loanManagementButton = new JButton("Loan Management");
+        JButton searchTransactionsButton = new JButton("Search Transactions");
+        JButton viewAuditReportButton = new JButton("View Audit Report");
 
         // Add buttons to panel
         buttonPanel.add(accountManagementButton);
         buttonPanel.add(logoutButton);
-        buttonPanel.add(reportsButton); // Add the reports button to the panel
-
-        // Add a button for loan management
-        JButton loanManagementButton = new JButton("Loan Management");
+        buttonPanel.add(reportsButton);
         buttonPanel.add(loanManagementButton);
-
-        // Add a button for searching transactions
-        JButton searchTransactionsButton = new JButton("Search Transactions");
         buttonPanel.add(searchTransactionsButton);
-
-        // Add a button to view the audit report
-        JButton viewAuditReportButton = new JButton("View Audit Report");
-        viewAuditReportButton.setFont(new Font("Arial", Font.PLAIN, 16));
-        viewAuditReportButton.setBackground(new Color(33, 150, 243)); // Blue background
-        viewAuditReportButton.setForeground(Color.WHITE);
-        viewAuditReportButton.setFocusPainted(false);
-        viewAuditReportButton.setPreferredSize(new Dimension(180, 40));
+        buttonPanel.add(viewAuditReportButton);
+        // viewAuditReportButton.setFont(new Font("Arial", Font.PLAIN, 16));
+        // viewAuditReportButton.setBackground(new Color(33, 150, 243));
+        // viewAuditReportButton.setForeground(Color.WHITE);
+        // viewAuditReportButton.setFocusPainted(false);
+        // viewAuditReportButton.setPreferredSize(new Dimension(180, 40));
 
         // Update the action listener to load the audit log into the AuditReportScreen
         viewAuditReportButton.addActionListener(e -> {
             new AuditReportScreen(); // Open the AuditReportScreen instead of the .log file
         });
-
-        // Add the button to the button panel
-        buttonPanel.add(viewAuditReportButton);
 
         // Add components to frame
         add(buttonPanel, BorderLayout.SOUTH);
@@ -207,6 +218,7 @@ public class Dashboard extends JFrame {
         });
 
         // Create a JTable to display the transactions
+        @SuppressWarnings("unused")
         String[] columnNames = {"Date", "Description", "Amount"};
         // Read data from the transactions.txt file
         java.util.List<Object[]> transactionList = new java.util.ArrayList<>();
@@ -227,6 +239,7 @@ public class Dashboard extends JFrame {
         }
 
         // Convert the list to an array
+        @SuppressWarnings("unused")
         Object[][] data = transactionList.toArray(new Object[0][]);
 
         // Ensure the topPanel is added to the content pane and visible
@@ -240,9 +253,19 @@ public class Dashboard extends JFrame {
         mainPanel.add(welcomePanel, BorderLayout.NORTH);
         mainPanel.add(topPanel, BorderLayout.CENTER);
         mainPanel.add(transactionsPanel, BorderLayout.SOUTH);
+
+        // Add the button panel to the mainPanel at the bottom
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Ensure the mainPanel is added to the content pane
+        setContentPane(mainPanel);
+
+        // Refresh the frame to ensure all components are displayed
+        mainPanel.revalidate();
+        mainPanel.repaint();
     }
 
     public static void main(String[] args) {
-        new Dashboard();
+        new Dashboard("1234567890", "John Doe"); // Placeholder account number and user name for testing
     }
 }
