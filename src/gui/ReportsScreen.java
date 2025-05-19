@@ -21,9 +21,21 @@ import src.data.DataManager;
 
 public class ReportsScreen extends JFrame {
 
-    public ReportsScreen() {
-        setTitle("Sunflower Banking - Reports and Statements");
-        setSize(600, 400);
+    private String accountNumber;
+
+    public ReportsScreen(String accountNumber) {
+        this.accountNumber = accountNumber;
+        setTitle("Banking System - Reports and Statements");
+
+        // Set the screen size to 60% of the entire screen
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        int width = (int) (screenSize.width * 0.6);
+        int height = (int) (screenSize.height * 0.6);
+        setSize(width, height);
+
+        // Center the screen in the viewport
+        setLocationRelativeTo(null);
+
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -88,13 +100,22 @@ public class ReportsScreen extends JFrame {
                 return;
             }
 
-            String[][] data = transactions.stream()
-                .filter(t -> filterDate == null || t.contains(filterDate))
-                .map(t -> t.split(","))
-                .toArray(String[][]::new);
+            // Filter transactions for the logged-in user
+            java.util.List<Object[]> userTransactions = new java.util.ArrayList<>();
+            for (String transaction : transactions) {
+                String[] parts = transaction.split(",");
+                if (parts.length >= 5 && parts[1].equals(accountNumber)) {
+                    if (filterDate == null || transaction.contains(filterDate)) {
+                        userTransactions.add(new Object[] {parts[0], parts[2], parts[3], parts[4]});
+                    }
+                }
+            }
 
-            String[] columnNames = {"Type", "Account", "Amount", "Timestamp"};
-            table.setModel(new javax.swing.table.DefaultTableModel(data, columnNames));
+            // Populate the JTable with the filtered transactions
+            table.setModel(new javax.swing.table.DefaultTableModel(
+                userTransactions.toArray(new Object[0][]),
+                new Object[] {"Type", "Amount", "Date", "Transaction Type"}
+            ));
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null, "Error loading transactions!", "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -104,13 +125,16 @@ public class ReportsScreen extends JFrame {
         List<String> transactions = DataManager.readTransactions();
         try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter("transactions_report.txt"))) {
             for (String transaction : transactions) {
-                writer.write(transaction);
-                writer.newLine();
+                String[] parts = transaction.split(",");
+                if (parts.length >= 5 && parts[1].equals(accountNumber)) {
+                    writer.write(transaction);
+                    writer.newLine();
+                }
             }
         }
     }
 
     public static void main(String[] args) {
-        new ReportsScreen();
+        new ReportsScreen("123456789"); // Example account number
     }
 }

@@ -43,8 +43,6 @@ public class Seeder {
                 String password = parts[9];
 
                 String hashedPassword = PasswordManager.hashPassword(password);
-                System.out.println("Debug (Seeder): Raw Password=" + password);
-                System.out.println("Debug (Seeder): Hashed Password=" + hashedPassword);
                 writer.write(accountType + "," + name + "," + accountNumber + "," + balance + "," + state + "," + gender + "," + cardType + "," + email + "," + phoneNumber + "," + hashedPassword);
                 writer.newLine();
             }
@@ -54,15 +52,80 @@ public class Seeder {
         }
     }
 
-    // Update account number generation logic to always be 10 digits and start with 20
     private static String generateAccountNumber() {
         Random random = new Random();
         return "20" + String.format("%08d", random.nextInt(100000000));
     }
 
+    public static void seedTransactions() {
+        try {
+            String accountNumber = null;
+            double balance = 10000;
+            // Get the first account from accounts.txt
+            String[] firstAccountParts = null;
+            java.util.List<String> allAccounts = new java.util.ArrayList<>();
+            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader("accounts.txt"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (firstAccountParts == null) {
+                        firstAccountParts = line.split(",");
+                        if (firstAccountParts.length >= 3) {
+                            accountNumber = firstAccountParts[2].trim();
+                        }
+                    }
+                    allAccounts.add(line);
+                }
+            }
+            // If no accounts, or first account is missing, do nothing
+            if (accountNumber == null) return;
+            // Seed transactions for the first account
+            try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter("transactions.txt", false))) {
+                for (int i = 0; i < 20; i++) { // Changed from 12 to 20
+                    String transactionType = (i % 2 == 0) ? "Deposit" : "Withdrawal";
+                    int amount = 1000 + (int)(Math.random() * 9000);
+                    String timestamp = java.time.LocalDateTime.now().minusDays(20 - i).toString();
+                    if (transactionType.equals("Deposit")) {
+                        balance += amount;
+                        writer.write("Deposit," + accountNumber + "," + amount + "," + timestamp + ",Credit\n");
+                    } else {
+                        if (balance >= amount) {
+                            balance -= amount;
+                            writer.write("Withdrawal," + accountNumber + "," + amount + "," + timestamp + ",Debit\n");
+                        } else {
+                            i--; // Try again if not enough balance
+                        }
+                    }
+                }
+            }
+            // Update the first account's balance in accounts.txt
+            if (firstAccountParts != null && firstAccountParts.length >= 4) {
+                firstAccountParts[3] = String.valueOf(balance);
+                allAccounts.set(0, String.join(",", firstAccountParts));
+                try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter("accounts.txt", false))) {
+                    for (String acc : allAccounts) {
+                        writer.write(acc);
+                        writer.newLine();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void seedAccountsAndTransactions() {
+        try {
+            seedCustomers();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        seedTransactions();
+    }
+
     public static void main(String[] args) {
         try {
             seedCustomers();
+            seedTransactions();
         } catch (NoSuchAlgorithmException e) {
             System.err.println("Error hashing password: " + e.getMessage());
         }

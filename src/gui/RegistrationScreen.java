@@ -71,20 +71,13 @@ public class RegistrationScreen extends JFrame {
         formPanel.setBackground(Color.WHITE);
         formPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(40, 20, 40, 20));
 
-        // Account Type Dropdown
+        // Account Type (should be at the top, above Full Name)
         JLabel accountTypeLabel = new JLabel("Account Type:");
         accountTypeLabel.setFont(new Font("Arial", Font.BOLD, 14));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        formPanel.add(accountTypeLabel, gbc);
-
-        String[] accountTypes = {"Savings", "Current"};
-        JComboBox<String> accountTypeDropdown = new JComboBox<>(accountTypes);
-        accountTypeDropdown.setPreferredSize(new java.awt.Dimension(250, 35));
-        accountTypeDropdown.setFont(new Font("Arial", Font.PLAIN, 14));
-        accountTypeDropdown.setBackground(Color.WHITE);
-        gbc.gridx = 1;
-        formPanel.add(accountTypeDropdown, gbc);
+        JComboBox<String> accountTypeCombo = new JComboBox<>(new String[]{"Savings", "Current"});
+        accountTypeCombo.setFont(new Font("Arial", Font.PLAIN, 14));
+        formPanel.add(accountTypeLabel);
+        formPanel.add(accountTypeCombo);
 
         // Full Name
         JLabel fullNameLabel = new JLabel("Full Name:");
@@ -282,63 +275,71 @@ public class RegistrationScreen extends JFrame {
 
         // Adjust layout constraints to place labels and input fields on separate lines
         gbc.gridx = 0; // Column 0 for labels
-        gbc.gridy = 0; // Row 0 for full name label
+        gbc.gridy = 0; // Row 0 for account type label
+        formPanel.add(accountTypeLabel, gbc);
+
+        gbc.gridx = 0; // Column 0 for input fields
+        gbc.gridy = 1; // Row 1 for account type combo
+        formPanel.add(accountTypeCombo, gbc);
+
+        gbc.gridx = 0; // Column 0 for labels
+        gbc.gridy = 2; // Row 2 for full name label
         formPanel.add(fullNameLabel, gbc);
 
         gbc.gridx = 0; // Column 0 for input fields
-        gbc.gridy = 1; // Row 1 for full name field
+        gbc.gridy = 3; // Row 3 for full name field
         formPanel.add(fullNameField, gbc);
 
         gbc.gridx = 0; // Column 0 for labels
-        gbc.gridy = 2; // Row 2 for email label
+        gbc.gridy = 4; // Row 4 for email label
         formPanel.add(emailLabel, gbc);
 
         gbc.gridx = 0; // Column 0 for input fields
-        gbc.gridy = 3; // Row 3 for email field
+        gbc.gridy = 5; // Row 5 for email field
         formPanel.add(emailField, gbc);
 
         gbc.gridx = 0; // Column 0 for labels
-        gbc.gridy = 4; // Row 4 for phone number label
+        gbc.gridy = 6; // Row 6 for phone number label
         formPanel.add(phoneNumberLabel, gbc);
 
         gbc.gridx = 0; // Column 0 for input fields
-        gbc.gridy = 5; // Row 5 for phone number field
+        gbc.gridy = 7; // Row 7 for phone number field
         formPanel.add(phoneNumberField, gbc);
 
         gbc.gridx = 0; // Column 0 for labels
-        gbc.gridy = 6; // Row 6 for password label
+        gbc.gridy = 8; // Row 8 for password label
         formPanel.add(passwordLabel, gbc);
 
         gbc.gridx = 0; // Column 0 for input fields
-        gbc.gridy = 7; // Row 7 for password field
+        gbc.gridy = 9; // Row 9 for password field
         formPanel.add(passwordField, gbc);
 
         gbc.gridx = 0; // Column 0 for labels
-        gbc.gridy = 8; // Row 8 for state label
+        gbc.gridy = 10; // Row 10 for state label
         formPanel.add(stateLabel, gbc);
 
         gbc.gridx = 0; // Column 0 for input fields
-        gbc.gridy = 9; // Row 9 for state dropdown
+        gbc.gridy = 11; // Row 11 for state dropdown
         formPanel.add(stateDropdown, gbc);
 
         gbc.gridx = 0; // Column 0 for labels
-        gbc.gridy = 10; // Row 10 for gender label
+        gbc.gridy = 12; // Row 12 for gender label
         formPanel.add(genderLabel, gbc);
 
         gbc.gridx = 0; // Column 0 for input fields
-        gbc.gridy = 11; // Row 11 for gender panel
+        gbc.gridy = 13; // Row 13 for gender panel
         formPanel.add(genderPanel, gbc);
 
         gbc.gridx = 0; // Column 0 for labels
-        gbc.gridy = 12; // Row 12 for card type label
+        gbc.gridy = 14; // Row 14 for card type label
         formPanel.add(cardTypeLabel, gbc);
 
         gbc.gridx = 0; // Column 0 for input fields
-        gbc.gridy = 13; // Row 13 for card type panel
+        gbc.gridy = 15; // Row 15 for card type panel
         formPanel.add(cardTypePanel, gbc);
 
         gbc.gridx = 0; // Column 0 for buttons
-        gbc.gridy = 14; // Row 14 for button panel
+        gbc.gridy = 16; // Row 16 for button panel
         formPanel.add(buttonPanel, gbc);
 
         // Ensure the JScrollPane and its contents are properly configured for scrolling
@@ -363,7 +364,7 @@ public class RegistrationScreen extends JFrame {
             String state = (String) stateDropdown.getSelectedItem();
             String gender = maleRadioButton.isSelected() ? "Male" : "Female";
             String cardType = masterCardCheckbox.isSelected() ? "MasterCard" : visaCardCheckbox.isSelected() ? "Visa" : "Verve";
-            String accountType = (String) accountTypeDropdown.getSelectedItem();
+            String accountType = (String) accountTypeCombo.getSelectedItem();
             String accountNumber = generatedAccountNumber;
 
             // Hash the password directly without a salt
@@ -377,7 +378,7 @@ public class RegistrationScreen extends JFrame {
 
             // Save to accounts.txt
             try (java.io.FileWriter writer = new java.io.FileWriter("accounts.txt", true)) {
-                writer.write(String.format("%s,%s,%s,5000.0,%s,%s,%s,%s,%s,%s\n", accountTypeDropdown.getSelectedItem(), fullName, accountNumber, state, gender, cardType, email, phoneNumber, hashedPassword));
+                writer.write(String.format("%s,%s,%s,5000.0,%s,%s,%s,%s,%s,%s\n", accountTypeCombo.getSelectedItem(), fullName, accountNumber, state, gender, cardType, email, phoneNumber, hashedPassword));
             } catch (java.io.IOException ex) {
                 JOptionPane.showMessageDialog(this, "Error saving to accounts file: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 return;

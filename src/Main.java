@@ -13,7 +13,13 @@ public class Main {
         } catch (NoSuchAlgorithmException e) {
             System.err.println("Error seeding customers: " + e.getMessage());
         }
+        try {
+            Seeder.seedAccountsAndTransactions();
+        } catch (Exception e) {
+            System.err.println("Error seeding accounts and transactions: " + e.getMessage());
+        }
         BackupScheduler.startDailyBackup();
+        BackupScheduler.startScheduledPaymentsProcessor();
 
         String prefilledAccountNumber = "2054567890"; // Default fallback
         String prefilledPassword = "password"; // Default fallback

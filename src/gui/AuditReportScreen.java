@@ -15,8 +15,16 @@ public class AuditReportScreen extends JFrame {
 
     public AuditReportScreen() {
         setTitle("Audit Report");
-        setSize(800, 600);
-        setLocationRelativeTo(null); // Center the window on the screen
+
+        // Set the screen size to 60% of the entire screen
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        int width = (int) (screenSize.width * 0.6);
+        int height = (int) (screenSize.height * 0.6);
+        setSize(width, height);
+
+        // Center the screen in the viewport
+        setLocationRelativeTo(null);
+
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // Create a panel to hold the table

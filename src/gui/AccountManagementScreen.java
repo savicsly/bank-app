@@ -22,7 +22,16 @@ public class AccountManagementScreen extends JFrame {
 
     public AccountManagementScreen() {
         setTitle("Sunflower Banking - Account Management");
-        setSize(500, 400);
+
+        // Set the screen size to 60% of the entire screen
+        java.awt.Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        int width = (int) (screenSize.width * 0.6);
+        int height = (int) (screenSize.height * 0.6);
+        setSize(width, height);
+
+        // Center the screen in the viewport
+        setLocationRelativeTo(null);
+
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -39,6 +48,12 @@ public class AccountManagementScreen extends JFrame {
         JTextField initialDepositField = new JTextField();
         JButton createAccountButton = new JButton("Create Account");
         JButton cancelButton = new JButton("Cancel");
+
+        // Add tooltips
+        accountHolderField.setToolTipText("Enter the full name of the account holder");
+        initialDepositField.setToolTipText("Enter the initial deposit amount (numbers only)");
+        accountTypeComboBox.setToolTipText("Select the type of account: Savings or Current");
+        createAccountButton.setToolTipText("Create a new account with the entered details");
 
         // Add components to form panel
         formPanel.add(accountTypeLabel);
@@ -70,7 +85,12 @@ public class AccountManagementScreen extends JFrame {
             }
         });
 
-        cancelButton.addActionListener(e -> dispose());
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
 
         setVisible(true);
     }

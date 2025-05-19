@@ -1,97 +1,104 @@
 package src.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.time.LocalDateTime; // Import LocalDateTime for timestamps
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import src.core.InputValidator; // Import the InputValidator class
-import src.core.NotificationManager; // Import the NotificationManager class
-import src.data.AuditLogger; // Import the AuditLogger class
-import src.data.DataManager; // Import the DataManager class
-
 public class WithdrawalScreen extends JFrame {
 
-    public WithdrawalScreen() {
-        setTitle("Sunflower Banking - Withdrawal");
-        setSize(400, 300);
+    public WithdrawalScreen(String accountNumber) {
+        setTitle("Withdraw Funds");
+        setSize(400, 320);
+        setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // Create components
         JLabel titleLabel = new JLabel("Withdraw Funds", JLabel.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
 
-        JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10));
-        JLabel accountLabel = new JLabel("Account Type:");
-        JComboBox<String> accountComboBox = new JComboBox<>(new String[]{"Savings", "Current"});
+        // --- Modern, consistent UI styling (matches TransferScreen/DepositScreen) ---
         JLabel amountLabel = new JLabel("Amount:");
         JTextField amountField = new JTextField();
-        JButton withdrawButton = new JButton("Withdraw");
-        JButton cancelButton = new JButton("Cancel");
+        amountField.setPreferredSize(new Dimension(140, 14));
 
-        // Add components to form panel
-        formPanel.add(accountLabel);
-        formPanel.add(accountComboBox);
+        Dimension buttonSize = new Dimension(120, 28);
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 2, 8, 0));
+        JButton withdrawButton = new JButton("Withdraw");
+        withdrawButton.setPreferredSize(buttonSize);
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.setPreferredSize(buttonSize);
+        buttonPanel.add(withdrawButton);
+        buttonPanel.add(cancelButton);
+
+        JPanel formPanel = new JPanel(new GridLayout(3, 1, 8, 8));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
         formPanel.add(amountLabel);
         formPanel.add(amountField);
-        formPanel.add(withdrawButton);
-        formPanel.add(cancelButton);
+        formPanel.add(buttonPanel);
 
-        // Add components to frame
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(formPanel, BorderLayout.CENTER);
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+
         add(titleLabel, BorderLayout.NORTH);
-        add(formPanel, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
 
-        // Add action listeners
         withdrawButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String accountType = (String) accountComboBox.getSelectedItem();
                 String amountText = amountField.getText();
-                if (!InputValidator.isValidAmount(amountText)) {
-                    JOptionPane.showMessageDialog(null, "Invalid amount format! Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
+                if (!src.core.InputValidator.isValidAmount(amountText)) {
+                    JOptionPane.showMessageDialog(WithdrawalScreen.this, "Invalid amount format! Please enter a valid number.", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 try {
                     double amount = Double.parseDouble(amountText);
                     if (amount > 0) {
-                        String timestamp = LocalDateTime.now().toString();
-                        DataManager.saveTransaction("Withdrawal", accountType, amount, timestamp);
-                        AuditLogger.log("Withdrawal", "Account: " + accountType + ", Amount: " + amount); // Log the withdrawal transaction
-                        NotificationManager.sendNotification("Withdrawal of $" + amount + " from " + accountType + " account was successful.");
-                        // Update the success message to include Naira (₦)
-                        JOptionPane.showMessageDialog(null, "Successfully withdrew ₦" + amount + " from " + accountType + " account.");
-                        // Update the balance after a withdrawal
-                        DataManager.updateBalance(accountType, -amount); // Subtract the withdrawn amount from the balance
-                        // Placeholder for actual withdrawal logic
+                        if (amount > 10000) {
+                            int confirm = JOptionPane.showConfirmDialog(WithdrawalScreen.this, "This is a large withdrawal. Are you sure you want to proceed?", "Authorization Required", JOptionPane.YES_NO_OPTION);
+                            if (confirm != JOptionPane.YES_OPTION) {
+                                return;
+                            }
+                        }
+                        String timestamp = java.time.LocalDateTime.now().toString();
+                        try {
+                            // Use accountNumber for both transaction and balance update
+                            src.data.DataManager.saveTransaction("Withdrawal", accountNumber, amount, timestamp);
+                            src.data.DataManager.updateBalance(accountNumber, -amount);
+                        } catch (src.core.InvalidAccountException ex) {
+                            JOptionPane.showMessageDialog(WithdrawalScreen.this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                        src.data.AuditLogger.log("Withdrawal", "Account: " + accountNumber + ", Amount: " + amount);
+                        // src.core.NotificationManager.notifyUser("Withdrawal of ₦" + amount + " from account was successful.");
+                        JOptionPane.showMessageDialog(WithdrawalScreen.this, "Successfully withdrew ₦" + amount + " from your account.");
                     } else {
-                        JOptionPane.showMessageDialog(null, "Amount must be greater than zero!", "Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(WithdrawalScreen.this, "Amount must be greater than zero!", "Error", JOptionPane.ERROR_MESSAGE);
                     }
-                } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(null, "Error saving transaction to file!", "Error", JOptionPane.ERROR_MESSAGE);
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Invalid amount entered!", "Error", JOptionPane.ERROR_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(WithdrawalScreen.this, "Error processing withdrawal: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
 
-        cancelButton.addActionListener(e -> dispose());
+        cancelButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
 
         setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        new WithdrawalScreen();
     }
 }
